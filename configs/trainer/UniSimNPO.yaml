@@ -1,0 +1,14 @@
+defaults:
+  - DrSimNPO
+
+handler: UniSimNPO
+method_args:
+  retain_loss_eps: ???
+  dual_step_size: 1.0
+  top_k_retain: null
+  dual_warmup_epochs: 0
+  retain_eval_batch_size: 16
+  retain_eval_ratio: 1.0
+  retain_eval_interval: 1
+  retain_scoring_mode: full_eval
+  retain_score_ema: 0.2

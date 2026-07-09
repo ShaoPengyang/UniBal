@@ -1,0 +1,8 @@
+- experiment=eval/tofu/default.yaml
+- forget_split=forget01
+- holdout_split=holdout01
+- task_name=tofu_Llama-2-7b-chat-hf_retain99
+- model=Llama-2-7b-chat-hf
+- model.model_args.pretrained_model_name_or_path=open-unlearning/tofu_Llama-2-7b-chat-hf_retain99
+- model.tokenizer_args.pretrained_model_name_or_path=open-unlearning/tofu_Llama-2-7b-chat-hf_retain99
+- paths.output_dir=./saves/eval/tofu_Llama-2-7b-chat-hf_retain99

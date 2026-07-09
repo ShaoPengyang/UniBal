@@ -1,0 +1,73 @@
+[2026-03-16 11:59:19,036][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 11:59:19,044][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/config.json "HTTP/1.1 200 OK"
+[2026-03-16 11:59:19,290][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 11:59:19,297][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/config.json "HTTP/1.1 200 OK"
+[2026-03-16 11:59:23,633][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/generation_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 11:59:23,651][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/generation_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:37,016][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:37,026][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:37,286][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:37,292][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:41,144][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/generation_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:41,150][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/generation_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:41,396][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:41,408][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:41,664][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:41,924][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/tokenizer_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:42,176][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/tokenizer_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:42,440][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+[2026-03-16 12:00:42,741][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+[2026-03-16 12:00:43,021][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/tokenizer.model "HTTP/1.1 404 Not Found"
+[2026-03-16 12:00:43,415][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/tokenizer.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:43,662][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/tokenizer.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:43,919][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/tokenizer.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:44,345][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/added_tokens.json "HTTP/1.1 404 Not Found"
+[2026-03-16 12:00:44,593][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:44,844][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/special_tokens_map.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:45,098][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/resolve-cache/models/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/76a3e3afcd8b21a12a0820b6f6c47199a8e64775/special_tokens_map.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:45,349][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/open-unlearning/tofu_Llama-2-7b-chat-hf_retain99/resolve/main/chat_template.jinja "HTTP/1.1 404 Not Found"
+[2026-03-16 12:00:45,854][evaluator][INFO] - Evaluations stored in the experiment directory: ./saves/eval/tofu_Llama-2-7b-chat-hf_retain99
+[2026-03-16 12:00:45,856][evaluator][INFO] - Loading existing evaluations from ./saves/eval/tofu_Llama-2-7b-chat-hf_retain99/TOFU_EVAL.json
+[2026-03-16 12:00:45,862][evaluator][INFO] - ***** Running TOFU evaluation suite *****
+[2026-03-16 12:00:45,862][evaluator][INFO] - Fine-grained evaluations will be saved to: ./saves/eval/tofu_Llama-2-7b-chat-hf_retain99/TOFU_EVAL.json
+[2026-03-16 12:00:45,863][evaluator][INFO] - Aggregated evaluations will be summarised in: ./saves/eval/tofu_Llama-2-7b-chat-hf_retain99/TOFU_SUMMARY.json
+[2026-03-16 12:00:45,863][evaluator][INFO] - Skipping retain_Truth_Ratio, already evaluated.
+[2026-03-16 12:00:45,863][evaluator][INFO] - Result for metric retain_Truth_Ratio:	0.462051
+[2026-03-16 12:00:45,863][evaluator][INFO] - Skipping ra_Truth_Ratio, already evaluated.
+[2026-03-16 12:00:45,863][evaluator][INFO] - Result for metric ra_Truth_Ratio:	0.608698
+[2026-03-16 12:00:45,863][evaluator][INFO] - Skipping wf_Truth_Ratio, already evaluated.
+[2026-03-16 12:00:45,863][evaluator][INFO] - Result for metric wf_Truth_Ratio:	0.561179
+[2026-03-16 12:00:45,864][evaluator][INFO] - Skipping model_utility, already evaluated.
+[2026-03-16 12:00:45,864][evaluator][INFO] - Result for metric model_utility:	0.626796
+[2026-03-16 12:00:45,864][evaluator][INFO] - Skipping forget_truth_ratio, already evaluated.
+[2026-03-16 12:00:45,864][evaluator][INFO] - Result for metric forget_truth_ratio:	0.677686
+[2026-03-16 12:00:45,864][evaluator][INFO] - Skipping forget_quality, already evaluated.
+[2026-03-16 12:00:45,866][metrics][INFO] - Skipping forget_Q_A_gibberish's precompute forget_Q_A_ROUGE, already evaluated.
+[2026-03-16 12:00:45,866][metrics][INFO] - Evaluating forget_Q_A_gibberish
+[2026-03-16 12:00:46,107][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/madhurjindal/autonlp-Gibberish-Detector-492513457/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:46,112][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/madhurjindal/autonlp-Gibberish-Detector-492513457/76672dd7d3575f68ab980705bcec975cc62de71c/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:46,358][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/madhurjindal/autonlp-Gibberish-Detector-492513457/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:46,368][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/madhurjindal/autonlp-Gibberish-Detector-492513457/76672dd7d3575f68ab980705bcec975cc62de71c/tokenizer_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:46,614][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/madhurjindal/autonlp-Gibberish-Detector-492513457/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:46,621][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/madhurjindal/autonlp-Gibberish-Detector-492513457/76672dd7d3575f68ab980705bcec975cc62de71c/tokenizer_config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:46,860][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/madhurjindal/autonlp-Gibberish-Detector-492513457/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+[2026-03-16 12:00:47,120][httpx][INFO] - HTTP Request: GET https://huggingface.co/api/models/madhurjindal/autonlp-Gibberish-Detector-492513457/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+[2026-03-16 12:00:47,428][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/madhurjindal/autonlp-Gibberish-Detector-492513457/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:47,438][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/madhurjindal/autonlp-Gibberish-Detector-492513457/76672dd7d3575f68ab980705bcec975cc62de71c/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:47,679][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/madhurjindal/autonlp-Gibberish-Detector-492513457/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+[2026-03-16 12:00:47,689][httpx][INFO] - HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/madhurjindal/autonlp-Gibberish-Detector-492513457/76672dd7d3575f68ab980705bcec975cc62de71c/config.json "HTTP/1.1 200 OK"
+[2026-03-16 12:00:48,083][evaluator][INFO] - Result for metric forget_Q_A_gibberish:	0.922196
+[2026-03-16 12:00:48,114][evaluator][INFO] - Skipping exact_memorization, already evaluated.
+[2026-03-16 12:00:48,114][evaluator][INFO] - Result for metric exact_memorization:	0.712055
+[2026-03-16 12:00:48,114][evaluator][INFO] - Skipping extraction_strength, already evaluated.
+[2026-03-16 12:00:48,114][evaluator][INFO] - Result for metric extraction_strength:	0.071923
+[2026-03-16 12:00:48,115][evaluator][INFO] - Skipping mia_loss, already evaluated.
+[2026-03-16 12:00:48,115][evaluator][INFO] - Result for metric mia_loss:	0.498125
+[2026-03-16 12:00:48,115][metrics][INFO] - Skipping privacy's precompute mia_loss, already evaluated.
+[2026-03-16 12:00:48,115][metrics][INFO] - Skipping privacy's precompute mia_zlib, already evaluated.
+[2026-03-16 12:00:48,116][metrics][INFO] - Skipping privacy's precompute mia_min_k, already evaluated.
+[2026-03-16 12:00:48,116][metrics][INFO] - Skipping privacy's precompute mia_min_k_plus_plus, already evaluated.
+[2026-03-16 12:00:48,116][metrics][INFO] - Evaluating privacy
+[2026-03-16 12:00:48,117][evaluator][INFO] - Result for metric privacy:	0.537198
+[2026-03-16 12:00:48,147][evaluator][INFO] - Skipping privleak, already evaluated.
+[2026-03-16 12:00:48,147][evaluator][INFO] - Result for metric privleak:	-0.750000

@@ -1,0 +1,13 @@
+{
+    "exact_memorization": 0.7120545968413353,
+    "extraction_strength": 0.07192325885251674,
+    "forget_Q_A_gibberish": 0.9221960484981537,
+    "forget_truth_ratio": 0.6776855570995245,
+    "mia_loss": 0.498125,
+    "model_utility": 0.6267955756223628,
+    "privacy": 0.5371980714464352,
+    "privleak": -0.7499999998500062,
+    "ra_Truth_Ratio": 0.6086983299990656,
+    "retain_Truth_Ratio": 0.4620514821956988,
+    "wf_Truth_Ratio": 0.5611791165541367
+}

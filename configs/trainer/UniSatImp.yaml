@@ -1,0 +1,10 @@
+defaults:
+  - DrSatImp
+
+handler: UniSatImp
+method_args:
+  retain_loss_eps: ???
+  dual_step_size: 1.0
+  top_k_retain: null
+  dual_warmup_epochs: 0
+  retain_eval_batch_size: 16

@@ -1,0 +1,15 @@
+defaults:
+  - NPO
+
+handler: ProbeRetainNPO
+method_args:
+  retain_loss_eps: 0.0
+  dual_step_size: 0.0
+  dual_warmup_epochs: 100000
+  probe_budget_k: 40
+  probe_build_batch_size: 10
+  probe_eval_batch_size: 10
+  probe_eval_interval: 100000
+  probe_selection_method: random
+  probe_cluster_max_iter: 20
+  probe_seed: 42
