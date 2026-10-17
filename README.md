@@ -1,53 +1,95 @@
-<h1 align="center">BalDRO</h1>
+<h1 align="center">UniBal</h1>
 
-<p align="center"><strong>A Distributionally Robust Optimization Framework for Large Language Model Unlearning</strong></p>
+<p align="center"><strong>A Unified Balancing Framework for Gradient-based LLM Unlearning</strong></p>
 
-<div align="center">
-  <a href="https://arxiv.org/abs/2601.09172"><img src="https://img.shields.io/badge/arXiv-2601.09172-red?logo=arxiv" alt="BalDRO paper"></a>
-  <a href="https://github.com/nxZhai/BalDRO"><img src="https://img.shields.io/badge/GitHub-BalDRO-94c320?logo=github" alt="Original BalDRO repository"></a>
-  <a href="#train-unibal"><img src="https://img.shields.io/badge/UniBal-implementation-5965b1" alt="UniBal implementation in this README"></a>
-</div>
+<p align="center">
+  <a href="#quick-start">Quick start</a> ·
+  <a href="#datasets-and-models">Datasets</a> ·
+  <a href="#train-on-tofu-and-muse">Training</a> ·
+  <a href="#parameter-sweeps">Parameter sweeps</a> ·
+  <a href="#evaluation-and-outputs">Evaluation</a>
+</p>
 
-This repository contains the original BalDRO training framework and a **UniBal implementation rebuilt on its BalDRO-DV trainers**. UniBal combines a robust forget loss with a constrained retain objective. A small set of semantic retain prototypes supplies feedback for the dual variable after each epoch.
+UniBal is an LLM unlearning implementation built on the BalDRO codebase. It combines a distributionally robust forget objective with a constrained retain objective. Its **semantic prototype probe** summarizes retain-set behavior for the epoch-level dual update, using each prototype's cluster size as its weight.
 
-![BalDRO framework](assets/baldro_overview.png)
+> **Method at a glance:** robust forget loss → model updates with randomly sampled retain examples → cluster-weighted retain probe → projected update of the retain penalty.
 
-## Contents
+The robust forget objective comes from BalDRO-DV, and the constrained primal–dual formulation follows PDU. UniBal's new component is the semantic prototype estimator for retain-side feedback. The prototypes are **only used to update the dual variable**; ordinary retain mini-batches still provide gradients for model training.
 
-- [Installation](#installation)
-- [Data and checkpoints](#data-and-checkpoints)
-- [Train UniBal](#train-unibal)
-- [Run parameter sweeps](#run-parameter-sweeps)
-- [How the implementation maps to the paper](#how-the-implementation-maps-to-the-paper)
-- [Outputs and evaluation](#outputs-and-evaluation)
-- [Original BalDRO scripts](#original-baldro-scripts)
-- [Reproducibility notes](#reproducibility-notes)
+## Quick start
 
-## Installation
+### 1. Install the environment
 
-Use **Linux with an NVIDIA GPU** for the supplied training configuration. The project pins PyTorch 2.4.1, Transformers 4.45.1, DeepSpeed 0.15.4, and other versions in [`requirements.txt`](requirements.txt). The model configs use BF16 and FlashAttention 2; choose a CUDA driver and GPU that support both. Multi-GPU runs need enough aggregate memory for the 7B target model, the reference model used by NPO, optimizer state, and evaluation.
+The supplied configurations target **Linux, NVIDIA CUDA, BF16, and FlashAttention 2**. They use Python 3.11 and pin the main Python dependencies in [`requirements.txt`](requirements.txt). Make sure your GPU and CUDA setup support these settings.
 
 ```bash
-cd BalDRO-main  # this modified checkout
-conda create -n baldro python=3.11.13 -y
-conda activate baldro
+cd /path/to/UniBal
+conda create -n unibal python=3.11.13 -y
+conda activate unibal
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 python -m pip install flash-attn --no-build-isolation
 ```
 
-Install a CUDA-compatible PyTorch build before the remaining requirements if your platform needs a specific wheel. Log in to Hugging Face and accept the relevant Llama model license before training:
+If your machine requires a particular CUDA-enabled PyTorch wheel, install the compatible PyTorch 2.4.1 build before installing the rest of the requirements. Authenticate with Hugging Face and obtain access to the Llama checkpoints used below:
 
 ```bash
 huggingface-cli login
 python -c "import torch, transformers, hydra; print(torch.__version__, transformers.__version__, torch.cuda.is_available())"
 ```
 
-The sweep launcher is Python and also works as a command generator on Windows. The pinned GPU training stack and shell wrappers are intended for Linux.
+The Python sweep launcher can print commands on Windows, but the pinned training stack and supplied shell wrappers are intended for Linux GPU use.
 
-## Data and checkpoints
+### 2. Inspect a run
 
-Hugging Face datasets are downloaded through `datasets` on first use. Download them in advance if your cluster has no network access:
+Run commands from the repository root. `--dry-run` prints the complete Hydra command without loading a model or dataset:
+
+```bash
+python scripts/unlearn/sweep_unibal.py tofu npo --split forget01 --max-runs 1 --dry-run
+```
+
+### 3. Start training
+
+```bash
+python scripts/unlearn/sweep_unibal.py tofu npo --split forget01 --max-runs 1 --cuda-devices 0
+```
+
+`--max-runs 1` selects the first configuration in the method's default search profile. Remove it to execute the whole profile. For an initial one-epoch training check, add `--epochs 1 --no-eval --max-runs 1`; `--no-eval` skips benchmark evaluation but leaves the prototype-based dual update active.
+
+## How UniBal works
+
+For a forget mini-batch, the inherited BalDRO-DV objective aggregates per-example losses with a positive log-sum-exp term:
+
+```text
+balanced forget loss = β × log(mean(exp(forget_loss_i / β)))
+```
+
+The model is trained with this forget loss and a retain NLL term weighted by the current nonnegative dual variable `λ`. Random retain examples are sampled for these model updates. Separately, a frozen encoder embeds the retain examples; k-medoids selects real examples as semantic prototypes. At the end of each epoch, UniBal evaluates the selected prototypes and updates `λ`:
+
+```text
+probe retain loss = Σ_m (cluster_size_m / retain_set_size) × NLL(prototype_m)
+λ_next           = max(0, λ + η × (probe retain loss − ε))
+```
+
+The probe uses **cluster proportions**, rather than a plain average over prototypes. `ε` is the retain-loss threshold and `η` is the dual step size. The default prototype count is 40 and the initial `λ` is 1. Implementations are in [`src/trainer/unlearn/unibal.py`](src/trainer/unlearn/unibal.py) and [`src/trainer/unlearn/prototypes.py`](src/trainer/unlearn/prototypes.py).
+
+The implementation limits k-medoids optimization to at most 5,000 candidate retain examples by default, then assigns **all** retain examples to the chosen medoids to compute cluster weights. This bounds the clustering cost but is an approximation to full-set k-medoids. Change the candidate cap with `--medoid-sample-size`; change the requested prototype count with `--prototypes`.
+
+## Datasets and models
+
+Datasets are loaded through Hugging Face `datasets` and downloaded on first use. The launcher chooses the dataset, target checkpoint, tokenizer, and bundled retain-reference log from `--split`:
+
+| Setting | Forget / retain training split | Starting checkpoint | Model config |
+| --- | --- | --- | --- |
+| TOFU `forget01` | `forget01` / `retain99` | `open-unlearning/tofu_Llama-2-7b-chat-hf_full` | `Llama-2-7b-chat-hf` |
+| TOFU `forget05` | `forget05` / `retain95` | Same TOFU checkpoint | `Llama-2-7b-chat-hf` |
+| TOFU `forget10` | `forget10` / `retain90` | Same TOFU checkpoint | `Llama-2-7b-chat-hf` |
+| MUSE `News` | `forget` / `retain1` from `muse-bench/MUSE-News` | `muse-bench/MUSE-news_target` | `Llama-2-7b-hf` |
+| MUSE `Books` | `forget` / `retain1` from `muse-bench/MUSE-Books` | `muse-bench/MUSE-books_target` | `ICLM-7B` |
+
+MUSE News uses a Llama-2-7B backbone; MUSE Books uses ICLM-7B. The MUSE target checkpoints use the `meta-llama/Llama-2-7b-hf` tokenizer, supplied separately by the launcher. The MUSE `retain2` split is used for evaluation rather than retain-side training.
+
+To stage datasets before running on a compute node:
 
 ```bash
 huggingface-cli download --repo-type dataset locuslab/TOFU
@@ -55,114 +97,92 @@ huggingface-cli download --repo-type dataset muse-bench/MUSE-News
 huggingface-cli download --repo-type dataset muse-bench/MUSE-Books
 ```
 
-| Benchmark | Forget / retain training data | Starting checkpoint | Tokenizer | Bundled retain reference log |
-| --- | --- | --- | --- | --- |
-| TOFU `forget01` | `forget01` / `retain99` | `open-unlearning/tofu_Llama-2-7b-chat-hf_full` | Same checkpoint | `saves/eval/tofu_Llama-2-7b-chat-hf_retain99/TOFU_EVAL.json` |
-| TOFU `forget05` | `forget05` / `retain95` | Same | Same | `saves/eval/tofu_Llama-2-7b-chat-hf_retain95/TOFU_EVAL.json` |
-| TOFU `forget10` | `forget10` / `retain90` | Same | Same | `saves/eval/tofu_Llama-2-7b-chat-hf_retain90/TOFU_EVAL.json` |
-| MUSE News | `forget` / `retain1` | `muse-bench/MUSE-news_target` (Llama-2-7B) | `meta-llama/Llama-2-7b-hf` | `saves/eval/muse_Llama-2-7b-hf_News_retrain/MUSE_EVAL.json` |
-| MUSE Books | `forget` / `retain1` | `muse-bench/MUSE-books_target` (ICLM-7B) | `meta-llama/Llama-2-7b-hf` | `saves/eval/muse_Llama-2-7b-hf_Books_retrain/MUSE_EVAL.json` |
+## Train on TOFU and MUSE
 
-The MUSE target checkpoints do not package tokenizer files; the launcher supplies the benchmark's Llama-2 tokenizer separately. The Books reference log has a **legacy `Llama-2-7b-hf` directory name** in this repository. Its filename is not evidence of checkpoint provenance. Check that a reference log was produced from the corresponding retain-only model before using its comparison metrics in a paper; pass a verified log with `--retain-logs-path` when needed. MUSE `retain2` is an evaluation split; the training retain split is `retain1`.
-
-## Train UniBal
-
-Run from the repository root. The launcher translates each option into a Hydra training command and gives each run a separate output directory. `--max-runs 1` starts one configuration from the profile. The commands below cover all three forget objectives and all three primary dataset settings:
+Choose `npo`, `simnpo`, or `satimp` as the forget objective. All three can be used with the TOFU and MUSE splits shown above. These examples each launch **one** configuration:
 
 ```bash
-# TOFU: select forget01, forget05, or forget10.
-python scripts/unlearn/sweep_unibal.py tofu npo    --split forget01 --max-runs 1 --cuda-devices 0
+# TOFU: choose the forgetting proportion explicitly.
+python scripts/unlearn/sweep_unibal.py tofu npo --split forget01 --max-runs 1 --cuda-devices 0
 python scripts/unlearn/sweep_unibal.py tofu simnpo --split forget05 --max-runs 1 --cuda-devices 0
 python scripts/unlearn/sweep_unibal.py tofu satimp --split forget10 --max-runs 1 --cuda-devices 0
 
-# MUSE: select News or Books. Each checkpoint uses its paper-specified backbone.
-python scripts/unlearn/sweep_unibal.py muse npo    --split News  --max-runs 1 --cuda-devices 0
+# MUSE: select the News or Books target and its matching data.
+python scripts/unlearn/sweep_unibal.py muse npo --split News --max-runs 1 --cuda-devices 0
 python scripts/unlearn/sweep_unibal.py muse simnpo --split Books --max-runs 1 --cuda-devices 0
-python scripts/unlearn/sweep_unibal.py muse satimp --split News  --max-runs 1 --cuda-devices 0
+python scripts/unlearn/sweep_unibal.py muse satimp --split News --max-runs 1 --cuda-devices 0
 ```
 
-Use `--dry-run` first to inspect the exact command without loading models or downloading data:
+For example, `muse satimp --split Books` or `tofu npo --split forget10` are also valid. The shell wrappers under `scripts/unlearn/tofu/` and `scripts/unlearn/muse/` call the same launcher and accept its options.
+
+## Parameter sweeps
+
+The launcher runs the Cartesian product of the values you provide. Default profiles are compact starting grids adapted from earlier experiment scripts; **they are not the manuscript's full search space**. Use `--dry-run` to review the combinations, `--max-runs N` to cap them, and `--continue-on-error` to keep going after a failed run.
 
 ```bash
-python scripts/unlearn/sweep_unibal.py muse npo --split Books --max-runs 1 --dry-run
-```
-
-For a short smoke run, add `--epochs 1 --max-runs 1 --no-eval`. The full evaluation suite is time consuming. The optional shell wrappers in `scripts/unlearn/tofu/` and `scripts/unlearn/muse/` forward their arguments to the same Python launcher, for example `bash scripts/unlearn/tofu/train_tofu_unibal_npo.sh --split forget01 --max-runs 1`.
-
-### Main training options
-
-| Option | Meaning | Default |
-| --- | --- | --- |
-| `--prototypes` | Requested number of retain clusters / representative samples | `40`, as in the manuscript |
-| `--probe-batch` | Number of prototypes evaluated at a time | TOFU `10`, MUSE `2` |
-| `--encoder` | Frozen semantic encoder checkpoint | `sentence-transformers/all-MiniLM-L6-v2` |
-| `--medoid-sample-size` | Maximum number of candidate points used to optimize medoids | `5000` |
-| `--encoder-batch-size`, `--encoder-max-length` | Semantic encoding batch size and token limit | `32`, `256` |
-| `--eps` | Retain-loss constraint threshold, ε | Dataset and method profile |
-| `--eta` | Epoch-level dual step size, η | Dataset and method profile |
-| `--beta-dv` | BalDRO-DV forget temperature, β | Dataset and method profile |
-| `--lr`, `--batch`, `--accum`, `--epochs` | Optimizer learning rate, per-device batch, gradient accumulation, epochs | Dataset and method profile |
-| `--model-path`, `--model-config`, `--tokenizer-path` | Override checkpoint, Hydra architecture config, or tokenizer | Benchmark defaults above |
-| `--retain-logs-path` | Verified retain-only evaluation JSON for the selected model/split | Bundled path above |
-| `--report-to` | Trainer logging integration (`none`, `wandb`, etc.) | `none` |
-
-For NPO and SimNPO, `--beta` is the **base forget-loss scale** and differs from `--beta-dv`. SimNPO also accepts `--delta`; SatImp accepts `--beta1` and `--beta2`. `--gamma` scales the forget term and defaults to `1.0` to match the manuscript objective.
-
-## Run parameter sweeps
-
-Each argument with multiple values forms a Cartesian product. The built-in profiles are **practical starting grids based on the old UniBal scripts**, with corrected BalDRO-DV and prototype weighting; they are not the entire paper search space. Supply explicit ranges to reproduce the manuscript's shared grid:
-
-```bash
-# Preview a paper-style TOFU NPO grid; batch 8 × accumulation 2/4
-# gives effective batch sizes 16/32 on one GPU.
+# Preview the first three combinations of a paper-style TOFU NPO grid.
 python scripts/unlearn/sweep_unibal.py tofu npo --split forget01 \
   --lr 1e-5 2e-5 3e-5 4e-5 5e-5 \
   --batch 8 --accum 2 4 \
   --beta-dv 1 2 5 10 --eps 0.12 0.14 0.16 0.18 \
   --eta 0.02 0.05 0.1 0.2 --max-runs 3 --dry-run
 
-# Start a smaller MUSE Books sweep and keep going if one run fails.
+# Run a smaller Books sweep; remove --max-runs to execute every combination.
 python scripts/unlearn/sweep_unibal.py muse simnpo --split Books \
   --lr 2e-5 5e-5 --beta-dv 1 2 --eps 0.14 0.16 \
-  --eta 0.05 0.1 --cuda-devices 0 --continue-on-error
+  --eta 0.05 0.1 --max-runs 4 --cuda-devices 0
 ```
 
-An effective batch size is `--batch × --accum × number_of_GPUs`. Use `--max-runs N` to cap a search; remove it for the complete Cartesian product. The launcher runs combinations sequentially and exits on the first failed run unless `--continue-on-error` is set. Runs are **independent**: each starts from the original target checkpoint.
+For a single-GPU run, the effective batch size is `--batch × --accum`. With distributed training, multiply by the number of training processes. `--cuda-devices` only sets visible devices; it does not start a distributed launcher. The manuscript's shared search space includes learning rates `1e-5` through `5e-5`, effective batch sizes 16 and 32, DV temperatures 1/2/5/10, `ε` values 0.12/0.14/0.16/0.18, and `η` values 0.02/0.05/0.1/0.2. The examples above do not sweep every base-method parameter; add `--beta` for NPO/SimNPO, `--delta` for SimNPO, or `--beta1` and `--beta2` for SatImp as needed.
 
-## How the implementation maps to the paper
-
-| Paper step | Implementation | Detail |
+| Option | Controls | Default |
 | --- | --- | --- |
-| Forget-side KL-DRO / DV loss | `src/trainer/unlearn/{npo,simnpo,satimp}.py` | Positive `β log mean exp(lossᵢ / β)` emphasizes higher-loss forget examples. |
-| Stochastic retain gradient | `src/data/unlearn.py`, `src/trainer/unlearn/unibal.py` | Model updates use randomly selected retain examples and mean per-example next-token NLL. |
-| Semantic prototypes | `src/trainer/unlearn/prototypes.py` | Frozen encoder embeds retain question–answer pairs or MUSE text chunks; k-medoids chooses real examples. |
-| Cluster-weighted probe | `src/trainer/unlearn/prototypes.py`, `src/trainer/unlearn/unibal.py` | Each medoid's NLL is weighted by `cluster_size / retain_set_size`; it is **not** a plain average of medoids. |
-| Projected dual update | `src/trainer/unlearn/unibal.py` | After each epoch: `λ ← max(0, λ + η × (weighted_probe_loss − ε))`, starting at `λ = 1`. |
-| Primal loss | `src/trainer/unlearn/{npo,simnpo,satimp}.py` | Robust forget loss plus `λ × retain_loss`; the constant `−λε` has no model gradient. |
+| `--prototypes` | Number of semantic retain representatives | 40 |
+| `--medoid-sample-size` | Candidate count for k-medoids optimization | 5,000 |
+| `--probe-batch` | Batch size for the epoch-end probe | TOFU 10; MUSE 2 |
+| `--encoder` | Frozen semantic encoder | `sentence-transformers/all-MiniLM-L6-v2` |
+| `--encoder-batch-size`, `--encoder-max-length` | Embedding batch size and token limit | 32; 256 |
+| `--eps`, `--eta`, `--beta-dv` | Retain threshold, dual step, and robust forget temperature | Method profile |
+| `--lr`, `--batch`, `--accum`, `--epochs` | Optimizer and training schedule | Method profile |
+| `--model-path`, `--model-config`, `--tokenizer-path` | Override target checkpoint/config/tokenizer | Dataset defaults |
+| `--retain-logs-path` | Matching retain-only evaluation log | Bundled reference path |
+| `--output-root`, `--report-to` | Run directory and logging integration | `saves/unlearn`; `none` |
 
-The requested prototype count is `min(40, number_of_nonempty_retain_examples)` by default; empty clusters can reduce the final count. The `--prototypes` option changes it directly. To control the quadratic k-medoids cost, the implementation optimizes medoids over at most **5,000 candidate retain examples**, then assigns **all** retain examples to the selected medoids before calculating weights. This candidate sampling is a computational approximation to the manuscript's full-set k-medoids statement. Change the cap with `--medoid-sample-size`. A cached `retain_prototypes.json` stores indices, weights, encoder identity, dataset hash, and settings for reuse.
+`--beta-dv` controls the robust aggregation and is distinct from `--beta`, which belongs to NPO/SimNPO. The forget-term multiplier `--gamma` defaults to 1.0. The launcher requires `--retain-logs-path` when `--model-path` is changed and evaluation is enabled, to avoid silently comparing against the wrong reference.
 
-The old UniBal scripts were used only as a source of useful hyperparameter ranges. The old forget weighting and unweighted mean over representative points are not used by this implementation. Method configs are in `configs/trainer/UniBal*.yaml`; the sweep orchestration is in `scripts/unlearn/sweep_unibal.py`.
+## Evaluation and outputs
 
-## Outputs and evaluation
+Each configuration has its own directory under:
 
-The default output root is `saves/unlearn/<benchmark>/<split>/<trainer>/<configuration>/`. Each run writes a checkpoint and Trainer state; the prototype cache is in the same run directory. Evaluation runs at every epoch and once after training, unless `--no-eval` is set. The default suites are configured in `configs/eval/tofu.yaml` and `configs/eval/muse.yaml` and write `TOFU_EVAL.json` / `TOFU_SUMMARY.json` or `MUSE_EVAL.json` / `MUSE_SUMMARY.json` under the run directory.
+```text
+saves/unlearn/<benchmark>/<split>/<trainer>/<configuration>/
+```
 
-TOFU defaults to model utility, forget quality, and gibberish metrics. MUSE defaults to knowledge and verbatim memorization, privacy leakage, and extraction strength. Comparison metrics use a **retain-only reference evaluation log**; its model and split must match the run. Passing a different checkpoint requires a corresponding `--retain-logs-path`. For the manuscript's full metric tables, enable the additional metrics listed in `configs/eval/tofu.yaml` and `configs/eval/muse.yaml` before running evaluation. The default evaluation config alone does not produce every metric named in the paper. The custom evaluation code runs on a single accelerator process; multi-process training requires a separate single-process evaluation run.
+The run directory contains the saved model, Trainer state, and `retain_prototypes.json` cache. Unless `--no-eval` is set, the default evaluation suite runs at each epoch and after training; metrics are written to checkpoint `evals/` directories as `TOFU_EVAL.json` / `TOFU_SUMMARY.json` or `MUSE_EVAL.json` / `MUSE_SUMMARY.json`.
 
-## Original BalDRO scripts
+Default TOFU evaluation includes model utility, forget quality, and gibberish metrics. Default MUSE evaluation includes knowledge memorization, verbatim memorization, privacy leakage, and extraction strength. The metric lists are configured in [`configs/eval/tofu.yaml`](configs/eval/tofu.yaml) and [`configs/eval/muse.yaml`](configs/eval/muse.yaml). **The default suites do not enable every metric reported in the manuscript.** Enable the additional entries needed for a full table before running those evaluations.
 
-The original NPO, SimNPO, and SatImp scripts remain under `scripts/unlearn/{tofu,muse}/`. `train_*_drnpo.sh`, `train_*_drsimnpo.sh`, and `train_*_drsatimp.sh` run BalDRO-DV; `train_*_group*.sh` run the group variant. Those scripts encode the original BalDRO experiment settings and are separate from the UniBal sweep launcher.
+Some metrics compare against a retain-only reference evaluation log. The launcher selects a bundled log for each default split; a custom target model needs a matching log supplied with `--retain-logs-path`. The bundled MUSE Books log uses a legacy `Llama-2-7b-hf` directory name. Confirm the checkpoint provenance of any reference log before using it for paper-level comparisons. The custom benchmark evaluator runs on one accelerator process; for multi-process training, run evaluation separately on one process.
 
-## Reproducibility notes
+## Code map and provenance
 
-- The source-level audit is in [`docs/UNIBAL_PAPER_AUDIT.md`](docs/UNIBAL_PAPER_AUDIT.md). It distinguishes direct formula matches, approximations, and items requiring a GPU run.
-- Training the 7B checkpoints and the full evaluation suite has not been validated in this checkout. Start with `--dry-run`, then a one-epoch run on your compute node.
-- For TOFU and MUSE references, verify the exact retain-only checkpoint behind each bundled JSON before reporting paper-level comparisons. The Books log directory uses a legacy model label.
+| Component | Location |
+| --- | --- |
+| UniBal primal loss and epoch-end dual update | [`src/trainer/unlearn/unibal.py`](src/trainer/unlearn/unibal.py) |
+| Semantic encoding, k-medoids, and cluster weights | [`src/trainer/unlearn/prototypes.py`](src/trainer/unlearn/prototypes.py) |
+| NPO, SimNPO, SatImp with BalDRO-DV aggregation | `src/trainer/unlearn/{npo,simnpo,satimp}.py` |
+| Random forget/retain training pairs | [`src/data/unlearn.py`](src/data/unlearn.py) |
+| Trainer defaults | `configs/trainer/UniBal*.yaml` |
+| Sweep launcher | [`scripts/unlearn/sweep_unibal.py`](scripts/unlearn/sweep_unibal.py) |
+| Source-level paper/code audit | [`docs/UNIBAL_PAPER_AUDIT.md`](docs/UNIBAL_PAPER_AUDIT.md) |
 
-## Acknowledgements and citation
+The original BalDRO baseline scripts remain under `scripts/unlearn/tofu/` and `scripts/unlearn/muse/`. UniBal inherits their BalDRO-DV forget aggregation and uses their codebase as its foundation; its semantic prototype feedback is implemented in the UniBal modules above. This repository also builds on [Open-Unlearning](https://github.com/locuslab/open-unlearning), [BalDRO](https://github.com/nxZhai/BalDRO), and the PDU formulation cited in the manuscript.
 
-This code builds on [BalDRO](https://github.com/nxZhai/BalDRO) and [Open-Unlearning](https://github.com/locuslab/open-unlearning). If you use the original BalDRO framework, cite:
+This checkout has been checked at source level and with launcher dry runs. Full 7B training, benchmark evaluation, and numerical reproduction still require a compatible GPU environment and verified reference checkpoints. See the [paper/code audit](docs/UNIBAL_PAPER_AUDIT.md) for the precise scope and known approximations.
+
+## Citation and license
+
+The UniBal manuscript has no public citation link yet. For work using the inherited BalDRO framework, cite its [paper](https://arxiv.org/abs/2601.09172):
 
 ```bibtex
 @inproceedings{shao2026baldro,
