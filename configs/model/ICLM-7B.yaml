@@ -1,0 +1,14 @@
+# MUSE-Books uses an ICLM-7B backbone distributed as a LlamaForCausalLM model.
+# The pretrained checkpoint and tokenizer are selected by the training script.
+model_args:
+  pretrained_model_name_or_path: ???
+  attn_implementation: flash_attention_2
+  torch_dtype: bfloat16
+tokenizer_args:
+  pretrained_model_name_or_path: ???
+template_args:
+  apply_chat_template: false
+  user_start_tag: "Question: "
+  user_end_tag: "\n"
+  asst_start_tag: "Answer: "
+  asst_end_tag: "\n\n"

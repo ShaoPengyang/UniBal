@@ -1,0 +1,16 @@
+defaults:
+  - DrNPO
+
+handler: UniBalNPO
+method_args:
+  gamma: 1.0
+  semantic_encoder_name: sentence-transformers/all-MiniLM-L6-v2
+  n_prototypes: 40
+  medoid_sample_size: 5000
+  encoder_batch_size: 32
+  encoder_max_length: 256
+  probe_batch_size: 8
+  probe_cache_path: null
+  dual_step_size: 0.05
+  retain_loss_eps: 0.16
+  initial_lambda: 1.0
