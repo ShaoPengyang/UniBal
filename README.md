@@ -1,11 +1,12 @@
-# BalDRO · UniBal
+<h1 align="center">BalDRO</h1>
 
-<p align="center">
-  <strong>Distributionally robust LLM unlearning with semantic prototype feedback</strong><br>
-  <a href="https://arxiv.org/abs/2601.09172">BalDRO paper</a> ·
-  <a href="https://www.overleaf.com/project/6992dd33bd6f8274e561efa9">UniBal manuscript</a> ·
-  <a href="https://github.com/nxZhai/BalDRO">Upstream BalDRO</a>
-</p>
+<p align="center"><strong>A Distributionally Robust Optimization Framework for Large Language Model Unlearning</strong></p>
+
+<div align="center">
+  <a href="https://arxiv.org/abs/2601.09172"><img src="https://img.shields.io/badge/arXiv-2601.09172-red?logo=arxiv" alt="BalDRO paper"></a>
+  <a href="https://github.com/nxZhai/BalDRO"><img src="https://img.shields.io/badge/GitHub-BalDRO-94c320?logo=github" alt="Original BalDRO repository"></a>
+  <a href="#train-unibal"><img src="https://img.shields.io/badge/UniBal-implementation-5965b1" alt="UniBal implementation in this README"></a>
+</div>
 
 This repository contains the original BalDRO training framework and a **UniBal implementation rebuilt on its BalDRO-DV trainers**. UniBal combines a robust forget loss with a constrained retain objective. A small set of semantic retain prototypes supplies feedback for the dual variable after each epoch.
 
